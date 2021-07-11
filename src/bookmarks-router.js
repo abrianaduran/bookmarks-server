@@ -16,9 +16,10 @@ bookmarksRouter
         for(const field of ['title', 'url', 'rating']) {
             if (!req.body[field]) {
                 logger.error(`${field} is required`)
+                return res.status(400).send(`'${field}' is required`)
             }
         }
-        const { title, url, description, content } = req.body;
+        const { title, url, description, rating } = req.body;
 
         if (!Number.isInteger(rating) || rating < 0 || rating > 5) {
             logger.error(`Invalid rating '${rating}' supplied`)
@@ -34,67 +35,48 @@ bookmarksRouter
         bookmarks.push(bookmark)
 
         logger.info(`Bookmark with id ${bookmark.id} created`)
-            res
-                .status(201)
-                .location(`http://localhost:8000/bookmarks/${bookmark.id}`)
-                .json(bookmark)
-
-        const id = uuid();
-
-        const bookmark = {
-            id,
-            title, 
-            url,
-            description,
-            rating
-        };
-
-        bookmarks.push(bookmark);
-
-        logger.info(`List with id ${id} created`)
 
         res
             .status(201)
-            .location(`http://localhost:8000/bookmarks/${id}`)
-            .json({id});
+            .location(`http://localhost:8000/bookmarks/${bookmark.id}`)
+            .json(bookmark);
     })
 
     bookmarksRouter
-        .route('/bookmarks/:id')
+        .route('/bookmarks/:bookmark_id')
         .get((req, res) => {
-            const { id } = req.params;
+            const { bookmark_id } = req.params;
 
-            const bookmarkIndex = bookmarks.find(b => b.id == bookmarkId);
+            const bookmark = bookmarks.find(b => b.id == bookmark_id);
 
-            if (!bookmarkIndex) {
-                logger.error(`Bookmark with id ${bookmarkId} not found.`);
+            if (!bookmark) {
+                logger.error(`Bookmark with id ${bookmark_id} not found.`);
                 return res
                     .status(404)
-                    .send('Bookmark Not Found');
+                    .send('Bookmark Not Found')
             }
-            res.json(bookmarkIndex);
+            res.json(bookmark)
         })
-
 
         .delete((req, res) => {
-            const { id } = req.params;
-            const bookmarkIndex = bookmarks.findIndex(bookmark => bookmark.id == id);
+            const { id } = req.params
+
+            const bookmarkIndex = bookmarks.findIndex(bookmark => bookmark.id === id);
             
-            if (listIndex === -1) {
-                logger.error(`List with id ${id} not found.`);
+            if (bookmarkIndex === -1) {
+                logger.error(`Bookmark with id ${id} not found.`)
                 return res
                     .status(404)
-                    .send('Not Found');
+                    .send('Not Found')
             }
 
-            bookmarks.splice(bookmarkIndex, 1);
+            bookmarks.splice(bookmarkIndex, 1)
 
-            logger.info(`List with id ${id} deleted.`);
+            logger.info(`Bookmark with id ${id} deleted.`)
             res
                 .status(204)
-                .end();
+                .end()
         })
 
-        module.exports = bookmarkRouter
+        module.exports = bookmarksRouter
 
-        // https://github.com/Thinkful-Ed/bookmarks-server/tree/trello-assignment-example-solution
