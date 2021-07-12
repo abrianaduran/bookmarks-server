@@ -2,6 +2,7 @@ const express = require('express')
 const logger = require('./logger')
 const { v4: uuid } = require('uuid')
 const { bookmarks } = require ('./store')
+const { isWebUri } = require('valid-url')
 
 const bookmarksRouter = express.Router()
 const bodyParser = express.json() 
@@ -59,23 +60,24 @@ bookmarksRouter
         })
 
         .delete((req, res) => {
-            const { id } = req.params
+            const { bookmark_id } = req.params
 
-            const bookmarkIndex = bookmarks.findIndex(bookmark => bookmark.id === id);
+            const bookmarkIndex = bookmarks.findIndex(bookmark => bookmark.id === bookmark_id)
             
             if (bookmarkIndex === -1) {
-                logger.error(`Bookmark with id ${id} not found.`)
+                logger.error(`Bookmark with id ${bookmark_id} not found.`)
                 return res
                     .status(404)
-                    .send('Not Found')
+                    .send('Boomark Not Found')
             }
 
             bookmarks.splice(bookmarkIndex, 1)
 
-            logger.info(`Bookmark with id ${id} deleted.`)
+            logger.info(`Bookmark with id ${bookmark_id} deleted.`)
             res
                 .status(204)
                 .end()
+                
         })
 
         module.exports = bookmarksRouter
